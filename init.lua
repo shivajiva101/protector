@@ -2,6 +2,7 @@
 -- get minetest.conf settings
 protector = {}
 protector.mod = "redo"
+protector.privs = {}
 protector.radius = tonumber(minetest.settings:get("protector_radius")) or 5
 protector.flip = minetest.settings:get_bool("protector_flip") or false
 protector.hurt = tonumber(minetest.settings:get("protector_hurt")) or 0
@@ -98,6 +99,16 @@ local del_member = function(meta, name)
 end
 
 
+local get_priv = function(name)
+	
+	local t = protector.privs[name]
+	
+	if not t then
+		t = minetest.check_player_privs(name, {protection_bypass = true})
+	end
+	return t	
+end
+
 -- protector interface
 local protector_formspec = function(meta)
 
@@ -184,7 +195,7 @@ protector.can_dig = function(r, pos, digger, onlyowner, infolevel)
 
 	-- protector_bypass privileged users can override protection
 	if infolevel == 1
-	and minetest.check_player_privs(digger, {protection_bypass = true}) then
+	and get_priv(digger) then
 		return true
 	end
 
@@ -519,6 +530,10 @@ minetest.register_craft({
 	recipe = {"protector:protect"}
 })
 
+minetest.register_on_leaveplayer(function(player)
+	protector.privs[player:get_player_name()] = nil
+end)
+
 
 -- check formspec buttons or when name entered
 minetest.register_on_player_receive_fields(function(player, formname, fields)
@@ -560,7 +575,6 @@ minetest.register_on_player_receive_fields(function(player, formname, fields)
 		end
 	end
 end)
-
 
 -- display entity shown when protector node is punched
 minetest.register_entity("protector:display", {
