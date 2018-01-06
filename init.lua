@@ -632,6 +632,25 @@ minetest.register_node("protector:display_node", {
 })
 
 
+minetest.register_on_priv_grant(function(name, granter, priv)
+	if name then
+		if priv == "protection_bypass" then
+			protector.privs[name] = true
+		end
+	end
+end)
+
+
+
+minetest.register_on_priv_revoke(function(name, granter, priv)
+	if name then
+		if priv == "protection_bypass" then
+			protector.privs[name] = false
+		end
+	end
+end)
+
+
 local path = minetest.get_modpath("protector")
 
 dofile(path .. "/doors_chest.lua")
